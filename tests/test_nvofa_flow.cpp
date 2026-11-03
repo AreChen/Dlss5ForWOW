@@ -202,7 +202,7 @@ TEST_CASE("optical flow is available on a supported adapter", "[device]") {
 #else
   auto gpu = DetectPrimaryGpu();
   REQUIRE(gpu.has_value());
-  REQUIRE((gpu->arch == GpuArch::Ada || gpu->arch == GpuArch::Blackwell));
+  REQUIRE((gpu->arch == GpuArch::Ampere || gpu->arch == GpuArch::Ada || gpu->arch == GpuArch::Blackwell));
 
   auto bridge = DeviceBridge::Create(gpu->luid, 256, 256);
   REQUIRE(bridge != nullptr);

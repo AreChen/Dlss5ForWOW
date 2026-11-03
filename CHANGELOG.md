@@ -8,11 +8,8 @@ theirs, shortened.
 
 ## How this file works
 
-**Versions are `MAJOR.MINOR.PATCH`, and the project is pre-1.0.** Before 1.0
-there is no major number to bump, so the rule is the one semver states for
-`0.x`: a release that changes behaviour people depend on raises the **minor**,
-and a release that only fixes things raises the **patch**. Reaching 1.0 is a
-decision about the project, not an outcome of the numbering.
+**Versions are `MAJOR.MINOR.PATCH`.** This fork starts at 1.0.0; the entries
+below 1.0.0 describe the upstream project and are retained for attribution.
 
 **A tag is the release.** `vX.Y.Z` on `main`, matching the `VERSION` in
 `CMakeLists.txt` — which is the single source of that number. It reaches the
@@ -30,6 +27,17 @@ is what the reader is looking for.
 ---
 
 ## Unreleased
+
+## 1.0.0
+
+- Forked xilla420's DLSS 5 Sidecar for World of Warcraft as Dlss5ForWOW.
+- Added experimental RTX 20 and RTX 30 support and recognition of the 310.9.16
+  V8b runtime used for those GPUs. RTX 20 has not been validated on hardware.
+- Excluded GTX 16 cards from the Turing RTX device list.
+- Fixed the lifetimes of optical-flow resources during teardown.
+- The public build includes the sidecar, ReShade and RenoDX; NVIDIA runtimes
+  are supplied separately by the user. GPU processing is at capture resolution.
+- Preserved upstream's separate-process design. The overlay is not frame generation.
 
 ## 0.6.0
 

@@ -333,9 +333,8 @@ bool Pipeline::Rebuild() {
   if (dev_.overlay) dev_.overlay->Hide();
 
   // The GPU must be finished with everything before any of it is released.
-  // The accelerator session is deliberately NOT torn down early here: it comes
-  // apart inside ~NvofaFlow, after the textures it registered are gone, which
-  // is the only ordering the driver survives.
+  // The flow object retains registered textures and releases them before
+  // destroying its accelerator session during device-state teardown.
   DrainGpu();
 
   // A caller-supplied pass holds no device resources and is carried across. One

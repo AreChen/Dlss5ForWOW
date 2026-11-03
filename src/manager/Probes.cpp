@@ -103,7 +103,7 @@ ProbeResult ProbeGpu() {
   if (!gpu) {
     r.state = ProbeState::Fail;
     r.detail = Tr("No NVIDIA adapter found.");
-    r.remedy = Tr("This sidecar needs an NVIDIA RTX 40 or RTX 50 card.");
+    r.remedy = Tr("This sidecar needs an NVIDIA RTX 20, 30, 40 or 50 card.");
     return r;
   }
 
@@ -117,9 +117,18 @@ ProbeResult ProbeGpu() {
     r.state = ProbeState::Ok;
     return r;
   }
+  if (gpu->arch == GpuArch::Turing) {
+    r.state = ProbeState::Warn;
+    r.remedy = Tr("RTX 20 support is experimental and unverified. Use the RTX 20/30 V8b runtime.");
+    return r;
+  }
+  if (gpu->arch == GpuArch::Ampere) {
+    r.state = ProbeState::Warn;
+    r.remedy = Tr("RTX 30 support is experimental. Use the compatible runtime.");
+    return r;
+  }
   r.state = ProbeState::Fail;
-  r.remedy = Tr("RTX 40 (Ada) or RTX 50 (Blackwell) is required. Older cards are "
-             "refused rather than run badly.");
+  r.remedy = Tr("An NVIDIA RTX 20, 30, 40 or 50 card is required.");
   return r;
 }
 
@@ -131,7 +140,7 @@ ProbeResult ProbeDriver() {
   if (!gpu) {
     r.state = ProbeState::Fail;
     r.detail = Tr("No NVIDIA adapter to query.");
-    r.remedy = Tr("Install an NVIDIA RTX 40 or RTX 50 card.");
+    r.remedy = Tr("Install an NVIDIA RTX 20, 30, 40 or 50 card.");
     return r;
   }
 
@@ -236,8 +245,7 @@ ProbeResult ProbeNeuralRuntime(const fs::path& sidecarDir, RuntimeMode mode) {
   if (!fs::exists(dll, ec) || ec) {
     r.state = ProbeState::Warn;
     r.detail = Tr("nvngx_dlssnr.dll not found next to the sidecar.");
-    r.remedy = Tr("Optional until the neural pass ships. Without it the pipeline "
-               "runs the passthrough pass.");
+    r.remedy = Tr("Install a compatible neural runtime using Components. Without it the overlay uses passthrough.");
     return r;
   }
 

@@ -1,60 +1,20 @@
 # Third-party components
 
-The source in this repository is MIT-licensed (see [LICENSE](LICENSE)). The
-release bundle additionally contains four binaries that are **not** ours, are
-not covered by that licence, and are redistributed only for convenience. Each
-remains the property of its author and is governed by its own terms.
+Dlss5ForWOW is a fork of [xilla420/dlss5-wow-sidecar](https://github.com/xilla420/dlss5-wow-sidecar). The project source retains the upstream MIT license and copyright notice in [LICENSE](LICENSE). Components below are separate works governed by their own licenses.
 
-None of these is built from source here, and none is downloaded by the
-software — neither executable in this project can reach the network at all.
+## Public release
 
-| Component | Publisher | What it does | Terms |
-|---|---|---|---|
-| `runtimes\latest\nvngx_dlssnr.dll` | NVIDIA | The DLSS 5 neural rendering runtime, 310.9.16, unmodified and carrying NVIDIA's signature. Blackwell (RTX 50) only. | NVIDIA proprietary. |
-| `runtimes\compatible\nvngx_dlssnr.dll` | NVIDIA | The DLSS 5 neural rendering runtime, 310.8.0. **This is a third-party build patched to run on Ada (RTX 40); the stock runtime is Blackwell-only.** | NVIDIA proprietary. Redistribution of a patched build is not covered by NVIDIA's own terms — see the warning below. |
-| `nvngx_dlss.dll` | NVIDIA | The DLSS upscaling runtime. Optional; only used if the add-on's work-in-progress upscaling path is enabled. | NVIDIA proprietary, per the NVIDIA DLSS SDK licence. |
-| `dxgi.dll` | crosire | ReShade 6.8, the add-on-enabled build. Hosts the add-on inside the sidecar's own process. | ReShade is BSD 3-Clause. Redistribution is permitted with its copyright notice. |
-| `renodx-dlss5.addon64` | RenoDX | The DLSS 5 Generic add-on. Detours the sidecar's own NGX calls and substitutes neural-rendered output. | RenoDX is MIT-licensed. |
+| Component | Publisher and purpose | License / source |
+| --- | --- | --- |
+| `dxgi.dll` | crosire, ReShade 6.8.0 add-on-enabled build; loaded by the sidecar process | [BSD 3-Clause](licenses/ReShade-LICENSE.md), [source](https://github.com/crosire/reshade/tree/v6.8.0) |
+| `renodx-dlss5.addon64` | RenoDX DLSS 5 Generic add-on | [MIT](licenses/RenoDX-LICENSE.txt), [source](https://github.com/clshortfuse/renodx) |
+| Dear ImGui | Compiled into the manager | [MIT](licenses/Dear-ImGui-LICENSE.txt) |
+| toml++ | Compiled into the application | [MIT](licenses/tomlplusplus-LICENSE.txt) |
+| NVIDIA DLSS SDK | NGX SDK used when compiling the application | [NVIDIA RTX SDKs License](licenses/NVIDIA-DLSS-SDK-LICENSE.txt), [source](https://github.com/NVIDIA/DLSS) |
+| NVIDIA Optical Flow D3D12 headers | NVIDIA header definitions used at build time | [Header license](licenses/NVIDIA-Optical-Flow-Header-LICENSE.txt) |
 
-## A note on the NVIDIA runtimes
+The ReShade and RenoDX binaries in the public package are taken from the original upstream 0.6.0 distribution. Their SHA-256 digests are listed in the build manifest. See `assets/fonts/` for SIL Open Font License notices for fonts embedded in the manager, and [art provenance](assets/art/PROVENANCE.md) for its artwork.
 
-`runtimes\compatible\nvngx_dlssnr.dll` shipped in the release is a **third-party
-build patched to run on Ada**. NVIDIA's own runtime is Blackwell-only. Redistributing a modified
-proprietary binary is not covered by NVIDIA's licence terms, and it is bundled
-here for convenience with that understood.
+## User-supplied NVIDIA runtimes
 
-If NVIDIA objects, the fix is to pull the two `nvngx_*.dll` files from the
-release assets. Nothing in the application depends on them being bundled: the
-**Setup** tab was built for the supply-your-own arrangement, names each missing
-file, says what it is for, points at where it comes from, and copies in whatever
-you browse to. Removing them from the release costs users one download and
-costs this project nothing.
-
-This is a practical note, not legal advice.
-
-## Fonts embedded in the manager
-
-The manager's three themes use six typefaces, embedded in
-`wowsidecar-manager.exe` as resources. All are licensed under the
-[SIL Open Font License 1.1](https://openfontlicense.org), which permits
-embedding and redistribution with software. The licence text for each is in
-[`assets/fonts/`](assets/fonts/), and the files are the unmodified releases
-from [google/fonts](https://github.com/google/fonts).
-
-| Typeface | Copyright | Used for |
-|---|---|---|
-| Cinzel | © The Cinzel Project Authors | Stormwind headings |
-| Alegreya Sans | © The Alegreya Sans Project Authors | Stormwind body text |
-| IM Fell English SC | © Igino Marini | Quest log headings |
-| Alegreya | © The Alegreya Project Authors | Quest log body text |
-| Marcellus SC | © Brian J. Bonislawsky | Dragonflight headings |
-| Inter | © The Inter Project Authors | Dragonflight body text |
-
-Anything those faces do not cover -- Cyrillic, Arabic, Chinese, Japanese,
-Korean -- is drawn from fonts Windows itself provides, loaded from the system
-font folder and never copied into the release.
-
-The original theme textures and emblem are generated by `tools/make_art.py`.
-The additional citadel illustration was generated with Codex image generation;
-see [art provenance](assets/art/PROVENANCE.md). No artwork from World of Warcraft
-was used as an input for these interface assets.
+The public release does **not** include `nvngx_dlssnr.dll` or `nvngx_dlss.dll`. The user supplies them separately. NVIDIA's runtime is proprietary, and community-modified variants are not covered by the project's MIT license. In particular, the RTX 20/30 V8b variant and the RTX 40 Ada-patched build are third-party modifications. Consult the terms applicable to the files you obtain. RTX 20 compatibility has not been verified on hardware.

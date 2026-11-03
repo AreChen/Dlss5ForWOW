@@ -77,10 +77,13 @@ class NvofaFlow {
   // back into the driver.
   Microsoft::WRL::ComPtr<ID3D12Device> device_;
 
-  // Handles only, deliberately not references. Holding the registered
-  // resources alive here changes the order they come apart relative to the
-  // driver session, and doing so crashed teardown.
-  std::unordered_map<ID3D12Resource*, void*> registered_;
+  // A registration must not outlive its D3D12 resource. Hold each texture
+  // until the driver has unregistered it during Shutdown().
+  struct Registration {
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+    void* handle = nullptr;
+  };
+  std::unordered_map<ID3D12Resource*, Registration> registered_;
 
   Microsoft::WRL::ComPtr<ID3D12Resource> flowGrid_;
   Microsoft::WRL::ComPtr<ID3D12Fence> inputFence_;

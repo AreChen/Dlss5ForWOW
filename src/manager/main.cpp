@@ -90,14 +90,10 @@ constexpr const char* kFirstRunTitle = "Before you use this";
 // Translated where it is drawn rather than here, because a constexpr pointer
 // cannot hold the result of a lookup.
 constexpr const char* kFirstRunBody =
-    "This sidecar never loads code into Wow.exe. That is what makes it safe, "
-    "and it is checked automatically every time it is built.\n\n"
-    "ReShade placed next to Wow.exe is a different thing entirely, and "
-    "Blizzard bans accounts for it. This tool will refuse to install there and "
-    "will refuse to run if it finds an injector in your WoW folder.\n\n"
-    "No third-party tool can promise you will never be banned. What this one "
-    "can promise is that it does not do any of the things Blizzard bans people "
-    "for.";
+    "Dlss5ForWOW runs in a separate process and does not load code into Wow.exe. "
+    "Keep it outside the WoW directory.\n\n"
+    "It refuses to run if it finds an injector in your WoW folder. "
+    "No third-party tool can guarantee compliance with game rules or account safety.";
 
 // ReShade must not load into this process.
 //
@@ -615,7 +611,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
   RegisterClassExW(&wc);
 
   const std::wstring windowTitle =
-      WideFromUtf8("DLSS 5 \xE2\x80\x94 Sidecar for World of Warcraft \xE2\x80\x94 v" SIDECAR_VERSION);
+      WideFromUtf8("Dlss5ForWOW v" SIDECAR_VERSION);
   HWND hwnd = CreateWindowExW(0, wc.lpszClassName, windowTitle.c_str(),
                               WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
                               kWindowWidth, kWindowHeight, nullptr, nullptr,
@@ -1108,7 +1104,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
     const float textRoom = switchX - S(16.0f) - textX;
     ImGui::SetCursorPos(ImVec2(textX, S(12.0f)));
     if (g_fonts.title) ImGui::PushFont(g_fonts.title);
-    ImGui::TextColored(Rgb(g_colors.goldBright), "DLSS 5 Sidecar");
+    ImGui::TextColored(Rgb(g_colors.goldBright), "Dlss5ForWOW");
     if (g_fonts.title) ImGui::PopFont();
     if (g_fonts.caption) ImGui::PushFont(g_fonts.caption);
     const char* tagline = Tr("Neural rendering for World of Warcraft, from outside the game process");
@@ -1780,7 +1776,7 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
             const std::string& version = slotVersion(slot);
             const bool latest = slot == RuntimeMode::Latest;
             const char* label = latest ? "Latest" : "Compatible";
-            const char* cards = latest ? "RTX 50 only, less GPU time" : "RTX 40 and RTX 50";
+            const char* cards = latest ? "RTX 50 only, less GPU time" : "RTX 20/30 V8b or RTX 40/50 Ada-patched";
             if (version.empty()) {
               ImGui::TextColored(Rgb(g_colors.warn), "%s  --  %s  (%s)", Tr(label), Tr("MISSING"),
                                  Tr(cards));
@@ -1981,16 +1977,15 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
       ImGui::Dummy(ImVec2(0.0f, S(12.0f)));
 
       SectionHeading("Neural runtime");
-      Hint("Which build of DLSS 5 the overlay runs. The latest costs less GPU time "
-           "per frame but runs only on RTX 50 cards; the compatible one runs on RTX 40 "
-           "and RTX 50. A change takes effect at the overlay's next start.");
+      Hint("Latest is for RTX 50. For RTX 20/30 use V8b; for RTX 40/50 use the Ada-patched compatible build. "
+           "RTX 20 support is unverified. Changes take effect at the overlay's next start.");
       ImGui::Dummy(ImVec2(0.0f, S(4.0f)));
       {
         struct RuntimeCard { RuntimeMode mode; const char* name; const char* note; };
         const RuntimeCard cards[] = {
             {RuntimeMode::Auto, "Automatic", "The right one for this card"},
             {RuntimeMode::Latest, "Latest", "RTX 50 only, less GPU time"},
-            {RuntimeMode::Compatible, "Compatible", "RTX 40 and RTX 50"},
+            {RuntimeMode::Compatible, "Compatible", "RTX 20/30 V8b or RTX 40/50 Ada-patched"},
         };
         const float cardWidth = (ImGui::GetContentRegionAvail().x - S(20.0f)) / 3.0f;
         for (size_t i = 0; i < std::size(cards); ++i) {

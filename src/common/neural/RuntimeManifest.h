@@ -9,12 +9,9 @@ namespace sidecar {
 
 // Which build of nvngx_dlssnr.dll a machine needs.
 //
-// The stock signed NVIDIA runtime is the only one this project will ever name a
-// digest for. AdaPatched exists because the spec's GPU matrix says Ada needs a
-// different build, but that build is community-produced, user-supplied, and
-// never vendored or downloaded (I11) -- so the manifest recognises the shape of
-// the requirement without shipping the artefact.
-enum class RuntimeVariant { None, Stock, AdaPatched };
+// Hashes identify the runtime build, including community-modified builds.
+// Rtx2030V8b was observed on an RTX 3080 Ti; Turing use is unverified.
+enum class RuntimeVariant { None, Stock, AdaPatched, Rtx2030V8b };
 
 struct RuntimeEntry {
   std::string version;

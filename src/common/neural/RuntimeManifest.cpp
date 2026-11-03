@@ -17,11 +17,12 @@ struct ManifestRow {
 
 // Digests are stored lowercase; LookupRuntime normalises before comparing.
 //
-// Only builds actually observed on hardware go in here. The 310.8.0 entry was
+// These builds have been observed on hardware, but not on every architecture
+// for which they are offered. The 310.8.0 entry was
 // confirmed twice over during the M3 Task 4 spike: renodx-dlss5.addon64 reported
 // it as a reference match, and the file carries a valid NVIDIA Authenticode
 // signature.
-constexpr std::array<ManifestRow, 3> kManifest{{
+constexpr std::array<ManifestRow, 4> kManifest{{
     {"e16bcf15e16e13f527491cdf7845b2fe6521a738d8f7c9c721866a8496e1fc8e",
      "310.8.0", RuntimeVariant::Stock},
     // Valid NVIDIA Authenticode signature, 266 MB, "DVS PRODUCTION". Verified on
@@ -39,6 +40,10 @@ constexpr std::array<ManifestRow, 3> kManifest{{
     // one it creates and evaluates. That is the whole reason this row exists.
     {"e67dee209320cdafe0e93e45675d7aa34323a53acc57a72b2e40a181581c989a",
      "310.8.0", RuntimeVariant::AdaPatched},
+    // Feature 18 created and evaluated on an RTX 3080 Ti. Its RTX 20 support
+    // remains experimental and has not been validated on Turing hardware.
+    {"e92cb312684e4c5f34d34dbbc7510aa83f57218c4ac101fe1b4d505e5d268f59",
+     "310.9.16 V8b", RuntimeVariant::Rtx2030V8b},
 }};
 
 std::string ToLower(std::string_view text) {
@@ -86,21 +91,26 @@ RuntimeVariant VariantForArchitecture(GpuArch arch) {
   switch (arch) {
     case GpuArch::Blackwell: return RuntimeVariant::Stock;
     case GpuArch::Ada:       return RuntimeVariant::AdaPatched;
-    // Turing and Ampere are refused by the spec's GPU matrix, so there is no
-    // runtime to ask for rather than a runtime we happen not to have.
+    case GpuArch::Ampere:    return RuntimeVariant::Rtx2030V8b; // Experimental.
+    case GpuArch::Turing:    return RuntimeVariant::Rtx2030V8b; // Unverified.
     default:                 return RuntimeVariant::None;
   }
 }
 
 RuntimeCompatibility CheckRuntimeCompatibility(GpuArch arch, RuntimeVariant variant) {
-  if (arch != GpuArch::Ada && arch != GpuArch::Blackwell) {
+  if (arch != GpuArch::Turing && arch != GpuArch::Ampere &&
+      arch != GpuArch::Ada && arch != GpuArch::Blackwell) {
     return RuntimeCompatibility::UnsupportedArchitecture;
   }
   switch (variant) {
-    // The patched build adds Ada support without dropping Blackwell, so it is
-    // the one variant that is correct on both.
+    // The older Ada patch was observed on Ampere, Ada and Blackwell; no
+    // evidence establishes that it can run on Turing.
     case RuntimeVariant::AdaPatched:
-      return RuntimeCompatibility::Ok;
+      return arch == GpuArch::Turing ? RuntimeCompatibility::WrongVariant
+                                    : RuntimeCompatibility::Ok;
+    case RuntimeVariant::Rtx2030V8b:
+      return (arch == GpuArch::Turing || arch == GpuArch::Ampere)
+                 ? RuntimeCompatibility::Ok : RuntimeCompatibility::WrongVariant;
     case RuntimeVariant::Stock:
       return arch == GpuArch::Blackwell ? RuntimeCompatibility::Ok
                                         : RuntimeCompatibility::WrongVariant;
@@ -115,8 +125,7 @@ std::string DescribeCompatibility(GpuArch arch, RuntimeVariant variant) {
       return {};
     case RuntimeCompatibility::UnsupportedArchitecture:
       return std::string(Tr("This GPU (")) + ToString(arch) +
-             Tr(") is outside the supported matrix; neural rendering needs Ada or "
-                "Blackwell.");
+             Tr(") is outside the supported matrix; neural rendering needs RTX 20, 30, 40 or 50.");
     case RuntimeCompatibility::WrongVariant:
     default:
       if (arch == GpuArch::Ada && variant == RuntimeVariant::Stock) {
@@ -136,6 +145,7 @@ const char* ToString(RuntimeVariant variant) {
   switch (variant) {
     case RuntimeVariant::Stock:      return "stock NVIDIA";
     case RuntimeVariant::AdaPatched: return "Ada-patched";
+    case RuntimeVariant::Rtx2030V8b: return "RTX 20/30 V8b";
     default:                         return "none";
   }
 }

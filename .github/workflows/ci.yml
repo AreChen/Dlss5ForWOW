@@ -9,9 +9,6 @@ name: CI
 # optical-flow device tests skip. Nothing else changes.
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 jobs:

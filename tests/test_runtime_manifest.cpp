@@ -104,11 +104,11 @@ TEST_CASE("Describing a known runtime names its version", "[unit]") {
 TEST_CASE("Each architecture asks for the variant it can run", "[unit]") {
   CHECK(VariantForArchitecture(GpuArch::Blackwell) == RuntimeVariant::Stock);
   CHECK(VariantForArchitecture(GpuArch::Ada) == RuntimeVariant::AdaPatched);
+  CHECK(VariantForArchitecture(GpuArch::Ampere) == RuntimeVariant::Rtx2030V8b);
+  CHECK(VariantForArchitecture(GpuArch::Turing) == RuntimeVariant::Rtx2030V8b);
 }
 
 TEST_CASE("Unsupported architectures ask for no runtime at all", "[unit]") {
-  CHECK(VariantForArchitecture(GpuArch::Turing) == RuntimeVariant::None);
-  CHECK(VariantForArchitecture(GpuArch::Ampere) == RuntimeVariant::None);
   CHECK(VariantForArchitecture(GpuArch::Unsupported) == RuntimeVariant::None);
 }
 
@@ -133,6 +133,20 @@ TEST_CASE("Runtimes that can run on a card are accepted", "[unit]") {
         RuntimeCompatibility::Ok);
   CHECK(CheckRuntimeCompatibility(GpuArch::Ada, RuntimeVariant::AdaPatched) ==
         RuntimeCompatibility::Ok);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Ampere, RuntimeVariant::AdaPatched) ==
+        RuntimeCompatibility::Ok);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Ampere, RuntimeVariant::Rtx2030V8b) ==
+        RuntimeCompatibility::Ok);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Turing, RuntimeVariant::Rtx2030V8b) ==
+        RuntimeCompatibility::Ok);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Turing, RuntimeVariant::AdaPatched) ==
+        RuntimeCompatibility::WrongVariant);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Turing, RuntimeVariant::Stock) ==
+        RuntimeCompatibility::WrongVariant);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Ada, RuntimeVariant::Rtx2030V8b) ==
+        RuntimeCompatibility::WrongVariant);
+  CHECK(CheckRuntimeCompatibility(GpuArch::Ampere, RuntimeVariant::Stock) ==
+        RuntimeCompatibility::WrongVariant);
   // The patched build adds Ada without dropping Blackwell, so it is correct on
   // both rather than being an Ada-only substitute.
   CHECK(CheckRuntimeCompatibility(GpuArch::Blackwell, RuntimeVariant::AdaPatched) ==
@@ -146,7 +160,7 @@ TEST_CASE("A compatible pairing has nothing to say", "[unit]") {
 
 TEST_CASE("Cards outside the matrix are reported as such, not as wrong runtimes",
           "[unit]") {
-  for (GpuArch arch : {GpuArch::Turing, GpuArch::Ampere, GpuArch::Unsupported}) {
+  for (GpuArch arch : {GpuArch::Unsupported}) {
     CHECK(CheckRuntimeCompatibility(arch, RuntimeVariant::AdaPatched) ==
           RuntimeCompatibility::UnsupportedArchitecture);
     CHECK(DescribeCompatibility(arch, RuntimeVariant::AdaPatched).empty() == false);
@@ -157,4 +171,12 @@ TEST_CASE("Every variant has a name fit to show an operator", "[unit]") {
   CHECK(std::string(ToString(RuntimeVariant::Stock)).find("tock") != std::string::npos);
   CHECK(std::string(ToString(RuntimeVariant::AdaPatched)).find("da") != std::string::npos);
   CHECK(std::string(ToString(RuntimeVariant::None)).length() > 0);
+}
+
+TEST_CASE("RTX 30 V8b is recognised by its exact hash", "[unit]") {
+  const auto entry = LookupRuntime(
+      "e92cb312684e4c5f34d34dbbc7510aa83f57218c4ac101fe1b4d505e5d268f59");
+  REQUIRE(entry.has_value());
+  CHECK(entry->version == "310.9.16 V8b");
+  CHECK(entry->variant == RuntimeVariant::Rtx2030V8b);
 }

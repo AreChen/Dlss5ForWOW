@@ -1,186 +1,39 @@
-**English** | [Русский](README.ru.md) · [Website](https://xilla420.github.io/dlss5-wow-sidecar/) · [Changelog](CHANGELOG.md) · [How it works](docs/HOW-IT-WORKS.md)
+# Dlss5ForWOW
 
-# DLSS 5 Sidecar for World of Warcraft
+[中文](#中文) · [English](#english) · [Releases](https://github.com/AreChen/Dlss5ForWOW/releases) · [上游 / Upstream](https://github.com/xilla420/dlss5-wow-sidecar)
 
-[![Download](https://img.shields.io/github/v/release/xilla420/dlss5-wow-sidecar?label=download&color=c8aa6e)](https://github.com/xilla420/dlss5-wow-sidecar/releases/latest)
-[![CI](https://github.com/xilla420/dlss5-wow-sidecar/actions/workflows/ci.yml/badge.svg)](https://github.com/xilla420/dlss5-wow-sidecar/actions/workflows/ci.yml)
-[![Downloads](https://img.shields.io/github/downloads/xilla420/dlss5-wow-sidecar/total?color=1eff00)](https://github.com/xilla420/dlss5-wow-sidecar/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-![Windows 11](https://img.shields.io/badge/Windows-11-0078D4)
-![NVIDIA RTX 40 / 50](https://img.shields.io/badge/NVIDIA-RTX%2040%20%2F%2050-76B900)
+## 中文
 
-**NVIDIA DLSS 5 Neural Rendering for World of Warcraft, without touching the game.**
-A free overlay for RTX 40 and RTX 50 cards. Nothing is injected into `Wow.exe`,
-and nothing goes in your WoW folder.
+Dlss5ForWOW 是基于 [xilla420 的 DLSS 5 WoW Sidecar](https://github.com/xilla420/dlss5-wow-sidecar) 0.6.0 的独立分支。它在独立进程中捕获游戏画面、执行神经渲染并以叠加层显示；不向 Wow.exe 注入代码。它不是帧生成工具，也不能获得游戏原生的深度和运动矢量。请将程序放在游戏目录之外。第三方工具无法保证符合游戏规则或保证账号安全。
 
-![DLSS 5 off and on, on a WoW character](docs/screenshots/dlss-face-comparison.png)
+### 显卡和运行库
 
-*Left: the game as it is. Right: with DLSS 5. Retail WoW, RTX 4080, 1440p, zoomed 2.4×.*
-**[Drag the before/after slider on the website →](https://xilla420.github.io/dlss5-wow-sidecar/#compare)**
+| 显卡 | 运行库选择 | 状态 |
+| --- | --- | --- |
+| RTX 20 / Turing | 310.9.16 V8b，RTX 20/30 社区修改版 | 实验性；RTX 20 **未经实机验证** |
+| RTX 30 / Ampere | 310.9.16 V8b，RTX 20/30 社区修改版 | 实验性；曾在 RTX 3080 Ti 的捕获场景中运行 |
+| RTX 40 / Ada | 310.8.0 Ada 补丁版 | 沿用上游支持 |
+| RTX 50 / Blackwell | 310.9.16 官方版或 310.8.0 Ada 补丁版 | 沿用上游支持 |
 
----
+V8b 的 SHA-256：`e92cb312684e4c5f34d34dbbc7510aa83f57218c4ac101fe1b4d505e5d268f59`。不同版本可能有相同的文件版本号，请以哈希确认。RTX 20/30 的兼容性和速度取决于具体显卡、驱动及模型，RTX 20 并未验证。
 
-## What's new in 0.6.0
+### 安装
 
-- **No more ghosting.** Trails behind moving characters and smearing when the camera
-  turns are fixed, and 2× and 3× no longer make it worse.
-- **DLSS 5 310.9.16 on RTX 50.** NVIDIA's newest signed runtime, about 40% less GPU
-  time per frame. RTX 40 cards keep 310.8, which runs on them. The app picks for you;
-  see [Two DLSS 5 runtimes](#two-dlss-5-runtimes-latest-310916-and-compatible-3108).
+1. 下载 `Dlss5ForWOW-v1.0.0-win-x64.zip`，解压到《魔兽世界》文件夹之外。
+2. 公开发行包包含程序、ReShade 和 RenoDX，**不包含 NVIDIA 运行库**。自行准备适合显卡的 `nvngx_dlssnr.dll`。如需 DLSS 超分辨率功能，还需另备 `nvngx_dlss.dll`。请遵循各文件的使用条款。
+3. 运行 `wowsidecar-manager.exe`，在 **Setup / 安装** 页面选择神经渲染运行库文件并安装。程序会按照识别出的版本放到正确的运行库目录。也可按界面提示安装 `nvngx_dlss.dll`。
+4. 启动游戏并设置为**无边框窗口**，在管理器选择客户端，点击 **Start overlay / 启动叠加层**。默认启动快捷键是 `Ctrl+Alt+S`。
 
-**Updating from 0.5.0?** Unzip 0.6.0 into a new folder and run its
-`wowsidecar-manager.exe`. Don't copy the new files over the old folder: the runtimes
-now live in a `runtimes` folder. [All changes →](CHANGELOG.md)
+神经处理目前按捕获画面的实际分辨率运行，并不会自动降到建议分辨率；高分辨率会占用更多 GPU 时间。检查页面和日志可用于确认运行库是否加载及诊断错误。详见 [第三方声明](THIRD-PARTY-NOTICES.md)。
 
-## Get started
+## English
 
-1. **[Download the latest release](https://github.com/xilla420/dlss5-wow-sidecar/releases/latest)** and unzip it anywhere *except* your WoW folder.
-2. Run **`wowsidecar-manager.exe`** and pick your client at the top:
-   **Retail & Classic** or **3.3.5a Wrath**.
-3. Start WoW in **borderless windowed** mode. On 3.3.5a, tick **Windowed Mode** and
-   **Maximized** in Video options instead.
-4. Press **Start overlay** (or **Ctrl+Alt+S**). Then just play.
+Dlss5ForWOW is a fork of [xilla420's DLSS 5 WoW Sidecar](https://github.com/xilla420/dlss5-wow-sidecar) 0.6.0. It captures the game and applies neural rendering in a separate process, presenting the result as an overlay; it does not inject code into Wow.exe. It is not frame generation and does not have access to native game depth or motion vectors. Keep the application outside the WoW directory. No third-party tool can guarantee compliance with game rules or account safety.
 
-Everything you need is in the zip. The **Checks** page tells you if something is
-wrong, and how to fix it.
+RTX 20 support is experimental and **untested on hardware**. RTX 30 support is experimental; the 310.9.16 V8b runtime was previously observed on an RTX 3080 Ti. The V8b SHA-256 is `e92cb312684e4c5f34d34dbbc7510aa83f57218c4ac101fe1b4d505e5d268f59`. RTX 40 uses the Ada-patched 310.8.0 runtime; RTX 50 can use stock 310.9.16 or the Ada-patched runtime.
 
-## Easy or Advanced
+Download and extract the release outside the game folder. The release includes the executables, ReShade and RenoDX, but **no NVIDIA runtime DLLs**. Supply your own compatible `nvngx_dlssnr.dll` using the manager's **Setup** page; `nvngx_dlss.dll` is optional for the experimental upscaling path. Start WoW in borderless windowed mode and select **Start overlay**, or press `Ctrl+Alt+S`. The neural pass runs at capture resolution: the advisory matrix does not automatically downscale it.
 
-The manager opens in **Easy** mode: pick a look and neural strength on **Tuning**,
-check **Setup** and **Checks**, then start the overlay. Switch to **Advanced** in
-the sidebar for individual rendering settings, hotkey editing, detailed timings
-and logs. Switching modes keeps your settings.
+### Build
 
-**Save settings** and **Discard changes** stay visible on every page. Rendering
-changes apply the next time the overlay starts. Theme, language and mode are
-saved separately, without committing unfinished tuning changes.
-
-The welcome page uses original generated artwork. Presets, strength controls and
-the primary action support keyboard navigation with visible focus.
-
-**You need:** Windows 11 · an NVIDIA **RTX 40** or **RTX 50** card · WoW in borderless
-windowed mode (Windowed + Maximized on 3.3.5a).
-
-## Hotkeys
-
-| Keys | What it does |
-|---|---|
-| **Ctrl+Alt+S** | Start or stop the overlay |
-| **Ctrl+Alt+D** | Show or hide the overlay: instant before/after |
-| **Ctrl+Alt+H** | Show or hide the frame-time HUD |
-| **Ctrl+Alt+Backspace** | Panic button: take the overlay down, always |
-
-You can change the first three on the **Tuning** page in **Advanced** mode.
-
-## Strength: 1×, 2× or 3×
-
-![The neural strength setting](docs/screenshots/strength.png)
-
-DLSS 5 can run more than once on every frame. **1×** is subtle and closest to the
-game. **2×** and **3×** push the picture further, closer to the heavily processed
-look you see in demo videos. Each extra pass costs roughly one more pass of GPU time.
-
-## Two DLSS 5 runtimes: latest 310.9.16 and compatible 310.8
-
-![The neural runtime setting](docs/screenshots/runtime.png)
-
-The zip carries two builds of NVIDIA's DLSS 5 runtime (`nvngx_dlssnr.dll`), and
-**Tuning → Neural runtime** picks between them:
-
-| Option | Build | Runs on | |
-|---|---|---|---|
-| **Automatic** (default) | the right one for your card | RTX 40 and RTX 50 | Latest on RTX 50, Compatible on RTX 40 |
-| **Latest** | **DLSS 5 310.9.16**, signed by NVIDIA | RTX 50 only | about **40% less GPU time** per frame than 310.8, and less video memory |
-| **Compatible** | DLSS 5 310.8.0, patched for Ada | RTX 40 and RTX 50 | the build earlier releases shipped |
-
-Measured on an RTX 50 card: the neural pass dropped from 2.85 ms to 1.7 ms a frame.
-That doesn't raise WoW's frame rate, but it leaves the GPU more room. If the new build
-looks worse to you on an RTX 50, pick **Compatible** to go back. The change applies
-the next time the overlay starts.
-
-## Three looks, ten languages
-
-| Stormwind | Quest log | Dragonflight |
-|---|---|---|
-| ![Stormwind theme](docs/screenshots/theme-stormwind.png) | ![Quest log theme](docs/screenshots/theme-questlog.png) | ![Dragonflight theme](docs/screenshots/theme-dragonflight.png) |
-
-Pick the theme and the language at the foot of the side rail. The interface speaks
-English, Русский, Español, Deutsch, Français, Türkçe, العربية, 简体中文, 日本語 and 한국어.
-
-![The manager in Japanese, Arabic, Chinese and Korean](docs/screenshots/languages.png)
-
-## WoW 3.3.5a (Wrath private servers)
-
-Pick **3.3.5a Wrath** at the top of the window. Setup and Checks switch to that
-client: its own folder, its own window check, and the steps it needs.
-
-![The manager with the 3.3.5a client selected](docs/screenshots/client-wotlk.png)
-
-3.3.5a has no borderless option. In Video options tick **Windowed Mode** and
-**Maximized**, or add `SET gxWindow "1"` and `SET gxMaximize "1"` to `WTF/Config.wtf`
-while the game is closed. The manager shows both and never edits the file itself.
-
-On a slower PC, cap the game's frame rate with the driver's **Max Frame Rate** for
-`Wow.exe`, not with the game's `maxFPS`. That limiter is coarse on Windows 11: set to
-60, it delivered about 35 fps in testing.
-
-![Setup for 3.3.5a](docs/screenshots/setup-wotlk.png)
-
-## Is it safe for my account?
-
-Here is what it does *not* do, and every build checks it automatically:
-
-- It never loads code into `Wow.exe`, and never reads or writes the game's memory.
-- It puts nothing in your WoW folder, and refuses to run if it finds an injector there.
-- No ReShade next to the game. That is the setup Blizzard bans for.
-- No keyboard hooks, no fake input, no internet access.
-
-It reads the finished picture from Windows, the same way OBS or Discord screen
-share does. **No third-party tool can promise you will never be banned.** This one
-simply doesn't do any of the things people get banned for.
-[How that is enforced →](docs/HOW-IT-WORKS.md#why-this-exists-and-why-it-is-shaped-like-this)
-
-## Good to know
-
-- **It won't raise your FPS.** DLSS 5 Neural Rendering changes how the game *looks*.
-  It isn't upscaling or frame generation, and it costs some GPU time.
-- **Windows caps the overlay at your capture rate**, often 60 fps. The Status page
-  shows you exactly where each millisecond goes.
-- **Cap WoW's frame rate** (Max Foreground FPS) to about the captured rate. That
-  frees the GPU for the neural pass, at no cost. **On 3.3.5a, cap it in the driver**
-  (NVIDIA Control Panel or NVIDIA app, Max Frame Rate for `Wow.exe`): the game's own
-  `maxFPS` is coarse on Windows 11, and 60 lands near 35 fps.
-- **Low on video memory?** Close browsers and streaming tools, or lower texture quality.
-  The app warns you when this happens.
-- It adds about 11 ms of latency. That's fine for questing and raiding, and you
-  may feel it in high-end PvP.
-
-## FAQ
-
-**Does it work with WoW Classic?** Yes. Any client in borderless windowed mode works.
-
-**Does it work with 3.3.5a (Wrath private servers)?** Yes. Choose **3.3.5a Wrath** at
-the top of the manager, then in the game's Video options tick **Windowed Mode** and
-**Maximized**. See [WoW 3.3.5a](#wow-335a-wrath-private-servers).
-
-**Is it an addon?** No. It's a separate Windows program that sits over the game window.
-
-**Which GPUs?** GeForce RTX 40 (e.g. 4060–4090) and RTX 50 (e.g. 5060–5090). Older
-cards, AMD and Intel can't run DLSS 5.
-
-**Which DLSS 5 version does it use?** Two: the newest signed **310.9.16** on RTX 50
-cards, and the Ada-patched **310.8** on RTX 40. It picks automatically; see
-[Two DLSS 5 runtimes](#two-dlss-5-runtimes-latest-310916-and-compatible-3108).
-
-**Characters smear or leave trails when the camera turns?** That was a bug, now
-fixed in 0.6.0: the motion vectors pointed the wrong way, which also made 2× and 3×
-worse. [Download the latest release](https://github.com/xilla420/dlss5-wow-sidecar/releases/latest).
-
-**Where are the technical details?** In [How it works](docs/HOW-IT-WORKS.md):
-the safety checks, frame-rate measurements, the pipeline, and how to build it.
-
----
-
-MIT licensed. The third-party runtimes in the release zip belong to their authors;
-see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Not affiliated with NVIDIA or
-Blizzard Entertainment.
+Windows 11 x64, Visual Studio 2022 with C++20, Windows SDK with `dxc`, CMake 3.28+, the NVIDIA DLSS SDK and the NVIDIA Optical Flow SDK D3D12 headers are required. Configure with `-DSIDECAR_REQUIRE_SDKS=ON -DDLSS_SDK_DIR=<path> -DNVOF_SDK_DIR=<path>`, then build the `wowsidecar` and `wowsidecar-manager` targets in Release mode. CMake fetches Dear ImGui, toml++ and Catch2 unless their FetchContent source paths are supplied locally. Use `tools/package_release.ps1` with the compiled binaries and separately obtained ReShade/RenoDX binaries to create the public archive. Source is MIT licensed; third-party components retain their own terms: [notices](THIRD-PARTY-NOTICES.md), [licenses](licenses/).

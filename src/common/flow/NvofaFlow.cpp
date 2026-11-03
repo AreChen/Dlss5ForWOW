@@ -126,7 +126,7 @@ std::unique_ptr<NvofaFlow> NvofaFlow::Create(ID3D12Device* device,
 void* NvofaFlow::HandleFor(ID3D12Resource* resource) {
   if (!resource || !session_) return nullptr;
   const auto found = registered_.find(resource);
-  if (found != registered_.end()) return found->second;
+  if (found != registered_.end()) return found->second.handle;
 
   NvOFGPUBufferHandle handle = nullptr;
   NV_OF_REGISTER_RESOURCE_PARAMS_D3D12 params{};
@@ -144,7 +144,10 @@ void* NvofaFlow::HandleFor(ID3D12Resource* resource) {
       !handle) {
     return nullptr;
   }
-  registered_.emplace(resource, handle);
+  Registration registration;
+  registration.resource = resource;
+  registration.handle = handle;
+  registered_.emplace(resource, std::move(registration));
   return handle;
 }
 
@@ -217,12 +220,16 @@ void NvofaFlow::Shutdown() {
   const bool deviceAlive = device_ && device_->GetDeviceRemovedReason() == S_OK;
 
   if (api_ && session_ && deviceAlive) {
-    for (auto& [resource, handle] : registered_) {
+    for (auto& [resource, registration] : registered_) {
       (void)resource;
       NV_OF_UNREGISTER_RESOURCE_PARAMS_D3D12 params{};
-      params.hOFGpuBuffer = static_cast<NvOFGPUBufferHandle>(handle);
+      params.hOFGpuBuffer = static_cast<NvOFGPUBufferHandle>(registration.handle);
       Api(api_)->nvOFUnregisterResourceD3D12(&params);
     }
+    // On Ampere, releasing registered D3D12 textures after nvOFDestroy can
+    // crash the NVIDIA driver. Drop our references while the session is alive.
+    registered_.clear();
+    flowGrid_.Reset();
     Api(api_)->nvOFDestroy(static_cast<NvOFHandle>(session_));
   }
   registered_.clear();

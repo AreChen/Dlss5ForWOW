@@ -30,6 +30,9 @@ TEST_CASE("capture above the ceiling is scaled down to it", "[unit]") {
   const auto ada4k = InternalRenderSize(3840, 2160, GpuArch::Ada);
   CHECK(ada4k.height == 1440);
   CHECK(ada4k.width == 2560);   // 16:9 preserved
+  const auto ampere4k = InternalRenderSize(3840, 2160, GpuArch::Ampere);
+  CHECK(ampere4k.height == 1080);
+  CHECK(ampere4k.width == 1920);
 }
 
 TEST_CASE("aspect ratio survives scaling on unusual displays", "[unit]") {
@@ -58,9 +61,9 @@ TEST_CASE("both axes stay even", "[unit]") {
 // run there anyway. Inventing a resolution policy for it would be inventing one
 // for a case that cannot occur.
 TEST_CASE("unsupported architectures pass the capture size through", "[unit]") {
-  const auto turing = InternalRenderSize(3840, 2160, GpuArch::Turing);
-  CHECK(turing.width == 3840);
-  CHECK(turing.height == 2160);
+  const auto unsupported = InternalRenderSize(3840, 2160, GpuArch::Unsupported);
+  CHECK(unsupported.width == 3840);
+  CHECK(unsupported.height == 2160);
 }
 
 TEST_CASE("a degenerate capture size yields nothing", "[unit]") {
@@ -112,9 +115,12 @@ TEST_CASE("Ada device ids map to Ada", "[unit]") {
   REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x2786) == GpuArch::Ada);  // RTX 4070
 }
 
-TEST_CASE("Ampere and Turing are recognised but not supported", "[unit]") {
+TEST_CASE("Ampere and Turing RTX devices are recognised", "[unit]") {
   REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x2204) == GpuArch::Ampere);  // RTX 3090
   REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x1E04) == GpuArch::Turing);  // RTX 2080 Ti
+  REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x1F08) == GpuArch::Turing);  // RTX 2060
+  REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x1F15) == GpuArch::Turing);  // RTX 2060 mobile
+  REQUIRE(ArchitectureFromDeviceId(kNvidia, 0x1F09) == GpuArch::Unsupported);  // GTX 1660 Super
 }
 
 TEST_CASE("non-NVIDIA vendors are unsupported regardless of device id", "[unit]") {
@@ -138,6 +144,7 @@ TEST_CASE("unknown NVIDIA device ids are unsupported rather than guessed", "[uni
 TEST_CASE("default internal height follows the spec GPU matrix", "[unit]") {
   REQUIRE(DefaultInternalHeight(GpuArch::Blackwell) == 2160);
   REQUIRE(DefaultInternalHeight(GpuArch::Ada) == 1440);
-  REQUIRE(DefaultInternalHeight(GpuArch::Ampere) == 0);
+  REQUIRE(DefaultInternalHeight(GpuArch::Ampere) == 1080);
+  REQUIRE(DefaultInternalHeight(GpuArch::Turing) == 1080);
   REQUIRE(DefaultInternalHeight(GpuArch::Unsupported) == 0);
 }

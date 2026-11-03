@@ -40,9 +40,8 @@ const std::vector<Component>& Components() {
   static const std::vector<Component> components = {
       {"nvngx_dlssnr.dll",
        "DLSS 5 neural rendering runtime",
-       "The neural network itself. On an RTX 40 card this must be a build "
-       "patched for Ada; the stock runtime is Blackwell-only and fails at "
-       "feature creation with no diagnostic.",
+       "The neural runtime. RTX 20/30 use V8b (RTX 20 is unverified); "
+       "RTX 40 uses an Ada-patched build; RTX 50 can use stock.",
        "nvngx_dlssnr.dll",
        "github.com/rakanki911/DLSS5-Swapper releases",
        true},
@@ -124,10 +123,11 @@ InstallResult InstallComponent(const Component& component, const fs::path& sourc
   const char* slotName = nullptr;
   if (IsNeuralRuntime(component)) {
     const auto entry = LookupRuntime(Sha256File(source));
-    const bool patched = entry && entry->variant == RuntimeVariant::AdaPatched;
+    const bool patched = entry && (entry->variant == RuntimeVariant::AdaPatched ||
+                                   entry->variant == RuntimeVariant::Rtx2030V8b);
     destination = RuntimeSlotPath(sidecarDir,
                                   patched ? RuntimeMode::Compatible : RuntimeMode::Latest);
-    slotName = patched ? "Installed as the compatible runtime (RTX 40 and RTX 50)."
+    slotName = patched ? "Installed as the compatible runtime."
                        : "Installed as the latest runtime (RTX 50).";
     fs::create_directories(destination.parent_path(), ec);
     if (ec) return {false, Tr("Could not copy it in: ") + ec.message()};

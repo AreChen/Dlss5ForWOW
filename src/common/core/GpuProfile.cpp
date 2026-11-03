@@ -15,11 +15,21 @@ struct Range {
   GpuArch arch;
 };
 
+// NVIDIA's supported GPU list identifies these RTX 20/Quadro RTX Turing IDs.
+// GTX 16 also uses Turing but has no Tensor cores, so whole 0x1Fxx/0x21xx
+// ranges would incorrectly present GTX cards as eligible for this project.
+// https://download.nvidia.com/XFree86/Linux-x86_64/535.98/README/supportedchips.html
+constexpr uint32_t kTuringRtxIds[] = {
+    0x1E04, 0x1E07, 0x1E30, 0x1E36, 0x1E81, 0x1E82, 0x1E84, 0x1E87,
+    0x1E89, 0x1E90, 0x1E91, 0x1E93, 0x1EB0, 0x1EB1, 0x1EB5, 0x1EB6,
+    0x1EC2, 0x1EC7, 0x1ED0, 0x1ED1, 0x1ED3, 0x1EF5, 0x1F02, 0x1F03,
+    0x1F06, 0x1F07, 0x1F08, 0x1F10, 0x1F11, 0x1F12, 0x1F14, 0x1F15,
+    0x1F36, 0x1F42, 0x1F47, 0x1F50, 0x1F51, 0x1F54, 0x1F55, 0x1F76,
+};
+
 // Consumer desktop ranges. Deliberately narrow: an unknown id must fall
 // through to Unsupported so the manager reports it honestly.
 constexpr Range kRanges[] = {
-    {0x1E00, 0x1FFF, GpuArch::Turing},
-    {0x2180, 0x21FF, GpuArch::Turing},
     {0x2200, 0x22FF, GpuArch::Ampere},
     {0x2400, 0x24FF, GpuArch::Ampere},
     {0x2500, 0x25FF, GpuArch::Ampere},
@@ -43,6 +53,9 @@ constexpr Range kRanges[] = {
 
 GpuArch ArchitectureFromDeviceId(uint32_t vendorId, uint32_t deviceId) {
   if (vendorId != kNvidiaVendorId) return GpuArch::Unsupported;
+  for (const uint32_t id : kTuringRtxIds) {
+    if (deviceId == id) return GpuArch::Turing;
+  }
   for (const auto& r : kRanges) {
     if (deviceId >= r.lo && deviceId <= r.hi) return r.arch;
   }
@@ -53,6 +66,8 @@ uint32_t DefaultInternalHeight(GpuArch arch) {
   switch (arch) {
     case GpuArch::Blackwell: return 2160;
     case GpuArch::Ada:       return 1440;
+    case GpuArch::Ampere:    return 1080;  // Experimental, conservative starting point.
+    case GpuArch::Turing:    return 1080;  // Advisory only; no automatic downscaling.
     default:                 return 0;
   }
 }

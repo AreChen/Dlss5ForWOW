@@ -32,7 +32,7 @@ RuntimeChoice ChooseRuntime(RuntimeMode requested, GpuArch arch, bool latestPres
   choice.managed = true;
 
   // Only Blackwell can run the stock build. Anything else that reaches here is
-  // Ada, because the runtime refuses older cards before it asks.
+  // Ada or experimental Ampere, because the runtime refuses older cards.
   const bool blackwell = arch == GpuArch::Blackwell;
 
   switch (requested) {

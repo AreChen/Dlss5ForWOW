@@ -1,12 +1,8 @@
 name: Release
 
-# A tag makes a release. Nothing else does -- an ordinary push must not publish
-# anything, which is why this is a separate workflow from ci.yml rather than a
-# branch of it.
+# The fork's 1.0.0 release is built locally. Future releases run only when
+# explicitly dispatched, so pushing a tag cannot publish a competing asset.
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
     inputs:
       tag:

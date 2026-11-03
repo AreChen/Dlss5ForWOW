@@ -48,7 +48,8 @@ struct VideoMemory {
 };
 std::optional<VideoMemory> QueryVideoMemory(LUID adapter);
 
-// Spec GPU matrix: 4K on Blackwell, 1440p on Ada, nothing else supported.
+// Advisory ceiling: 4K on Blackwell, 1440p on Ada, 1080p on Ampere/Turing.
+// The neural pass currently runs at capture size; automatic downscaling is not implemented.
 uint32_t DefaultInternalHeight(GpuArch arch);
 
 struct RenderSize {

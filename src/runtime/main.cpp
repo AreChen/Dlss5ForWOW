@@ -133,15 +133,19 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   }
   GlobalLog().Info(std::string("adapter: ") + ToString(gpu->arch));
 
-  if (gpu->arch != GpuArch::Ada && gpu->arch != GpuArch::Blackwell) {
+  if (gpu->arch != GpuArch::Turing && gpu->arch != GpuArch::Ampere &&
+      gpu->arch != GpuArch::Ada && gpu->arch != GpuArch::Blackwell) {
     GlobalLog().Error(std::string(ToString(gpu->arch)) +
-                      " is not supported; RTX 40 or RTX 50 required");
+                      " is not supported; RTX 20, 30, 40 or 50 required");
     wchar_t msg[256];
     swprintf_s(msg,
-               WideFromUtf8(Tr("%hs is not supported. RTX 40 or RTX 50 required.")).c_str(),
+               WideFromUtf8(Tr("%hs is not supported. RTX 20, 30, 40 or 50 required.")).c_str(),
                ToString(gpu->arch));
     MessageBoxW(nullptr, msg, L"DLSS 5 Sidecar", MB_ICONERROR);
     return 1;
+  }
+  if (gpu->arch == GpuArch::Turing || gpu->arch == GpuArch::Ampere) {
+    GlobalLog().Info("RTX 20/30 support is experimental; use a compatible runtime. RTX 20 is unverified.");
   }
 
   const Target target = ResolveTarget(argc, argv);
