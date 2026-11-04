@@ -25,7 +25,6 @@ SOFTWARE.
 This licence covers the source in this repository only.
 
 The DLSS 5 neural rendering runtime (nvngx_dlssnr.dll), ReShade, and the RenoDX
-DLSS 5 add-on are separate works under their own licences. None of them is
-included here, none is downloaded by this software, and .gitignore blocks all
-three from ever being committed. You obtain them yourself, and their licences
-govern your use of them.
+DLSS 5 add-on are separate works under their own licences. The source repository
+does not contain those binaries, and the software does not download them.
+Some release archives include them; see THIRD-PARTY-NOTICES.md for details.

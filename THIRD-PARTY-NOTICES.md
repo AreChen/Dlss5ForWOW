@@ -15,6 +15,8 @@ Dlss5ForWOW is a fork of [xilla420/dlss5-wow-sidecar](https://github.com/xilla42
 
 The ReShade and RenoDX binaries in the public package are taken from the original upstream 0.6.0 distribution. Their SHA-256 digests are listed in the build manifest. See `assets/fonts/` for SIL Open Font License notices for fonts embedded in the manager, and [art provenance](assets/art/PROVENANCE.md) for its artwork.
 
-## User-supplied NVIDIA runtimes
+## NVIDIA runtime in the RTX 20/30 bundle
 
-The public release does **not** include `nvngx_dlssnr.dll` or `nvngx_dlss.dll`. The user supplies them separately. NVIDIA's runtime is proprietary, and community-modified variants are not covered by the project's MIT license. In particular, the RTX 20/30 V8b variant and the RTX 40 Ada-patched build are third-party modifications. Consult the terms applicable to the files you obtain. RTX 20 compatibility has not been verified on hardware.
+The RTX 20/30 V8 bundle includes a third-party modified NVIDIA neural runtime, installed as `runtimes/compatible/nvngx_dlssnr.dll`. Its supplied filename is `nvngx_dlssnr_309_plain_xnp255_fp16all_rtx2030_V8.dll` and its SHA-256 is `b5046907fb80e90926c6aa275b48dc7ffb81cfa05d46380ddc66c72692d777ba`. It is a different file from V8b and is not an unmodified NVIDIA driver binary. RTX 20 compatibility and this V8 bundle have not been hardware-tested.
+
+NVIDIA's runtime is proprietary and the community-modified runtime is not covered by this project's MIT license. The [NVIDIA RTX SDKs License](licenses/NVIDIA-DLSS-SDK-LICENSE.txt) is included for reference; the applicable rights for the modified runtime are separate. The original upstream project also [identifies its Ada-patched NVIDIA runtime as a third-party modified build](https://github.com/xilla420/dlss5-wow-sidecar/blob/main/THIRD-PARTY-NOTICES.md). The V8 bundle does not include `nvngx_dlss.dll`. RTX 40/50 users provide their own compatible neural runtime. The original runtime-free package remains available.

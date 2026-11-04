@@ -35,8 +35,9 @@ is what the reader is looking for.
   V8b runtime used for those GPUs. RTX 20 has not been validated on hardware.
 - Excluded GTX 16 cards from the Turing RTX device list.
 - Fixed the lifetimes of optical-flow resources during teardown.
-- The public build includes the sidecar, ReShade and RenoDX; NVIDIA runtimes
-  are supplied separately by the user. GPU processing is at capture resolution.
+- The runtime-free package includes the sidecar, ReShade and RenoDX. An additional
+  RTX 20/30 package bundles the separately supplied community-modified V8 runtime.
+  GPU processing is at capture resolution.
 - Preserved upstream's separate-process design. The overlay is not frame generation.
 
 ## 0.6.0
